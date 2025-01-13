@@ -27,7 +27,7 @@ public enum InputTextureStorageFormat {
 public struct InputTextureProperties {
     public let textureStorage:InputTextureStorageFormat
     public let texture:GLuint
-    
+
     public init(textureCoordinates:[GLfloat]? = nil, textureVBO:GLuint? = nil, texture:GLuint) {
         self.texture = texture
         switch (textureCoordinates, textureVBO) {
@@ -42,12 +42,12 @@ public struct InputTextureProperties {
 public struct GLSize {
     public let width:GLint
     public let height:GLint
-    
+
     public init(width:GLint, height:GLint) {
         self.width = width
         self.height = height
     }
-    
+
     public init(_ size:Size) {
         self.width = size.glWidth()
         self.height = size.glHeight()
@@ -72,7 +72,7 @@ public func renderQuadWithShader(_ shader:ShaderProgram, uniformSettings:ShaderU
         case (.some, .some): fatalError("Can't specify both vertices and a VBO in renderQuadWithShader()")
         case (.none, .none): fatalError("Can't specify both vertices and a VBO in renderQuadWithShader()")
     }
-    
+
     sharedImageProcessingContext.makeCurrentContext()
     shader.use()
     uniformSettings?.restoreShaderSettings(shader)
@@ -101,19 +101,19 @@ public func renderQuadWithShader(_ shader:ShaderProgram, uniformSettings:ShaderU
         } else if (index == 0) {
             fatalError("The required attribute named inputTextureCoordinate was missing from the shader program during rendering.")
         }
-        
+
         glActiveTexture(textureUnitForIndex(index))
         glBindTexture(GLenum(GL_TEXTURE_2D), inputTexture.texture)
 
         shader.setValue(GLint(index), forUniform:"inputImageTexture".withNonZeroSuffix(index))
     }
-    
+
     glDrawArrays(GLenum(GL_TRIANGLE_STRIP), 0, 4)
-    
+
     if (vertexBufferObject != nil) {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
     }
-    
+
     for (index, _) in inputTextures.enumerated() {
         glActiveTexture(textureUnitForIndex(index))
         glBindTexture(GLenum(GL_TEXTURE_2D), 0)
@@ -133,7 +133,7 @@ func renderStencilMaskFromFramebuffer(_ framebuffer:Framebuffer) {
     glColorMask(GLboolean(GL_FALSE), GLboolean(GL_FALSE), GLboolean(GL_FALSE), GLboolean(GL_FALSE))
     glStencilFunc(GLenum(GL_ALWAYS), 1, 1)
     glStencilOp(GLenum(GL_KEEP), GLenum(GL_KEEP), GLenum(GL_REPLACE))
-    
+
 #if GL
     glEnable(GLenum(GL_ALPHA_TEST))
     glAlphaFunc(GLenum(GL_NOTEQUAL), 0.0)
@@ -142,12 +142,12 @@ func renderStencilMaskFromFramebuffer(_ framebuffer:Framebuffer) {
     let alphaTestShader = crashOnShaderCompileFailure("Stencil"){return try sharedImageProcessingContext.programForVertexShader(OneInputVertexShader, fragmentShader:AlphaTestFragmentShader)}
     renderQuadWithShader(alphaTestShader, vertices:standardImageVertices, inputTextures:[inputTextureProperties])
 #endif
-    
+
     glColorMask(GLboolean(GL_TRUE), GLboolean(GL_TRUE), GLboolean(GL_TRUE), GLboolean(GL_TRUE))
-    
+
     glStencilFunc(GLenum(GL_EQUAL), 1, 1)
     glStencilOp(GLenum(GL_KEEP), GLenum(GL_KEEP), GLenum(GL_KEEP))
-    
+
 #if GL
     glDisable(GLenum(GL_ALPHA_TEST))
 #endif
@@ -174,7 +174,7 @@ func textureUnitForIndex(_ index:Int) -> GLenum {
 
 public func generateTexture(minFilter:Int32, magFilter:Int32, wrapS:Int32, wrapT:Int32) -> GLuint {
     var texture:GLuint = 0
-    
+
     glActiveTexture(GLenum(GL_TEXTURE1))
     glGenTextures(1, &texture)
     glBindTexture(GLenum(GL_TEXTURE_2D), texture)
@@ -184,7 +184,7 @@ public func generateTexture(minFilter:Int32, magFilter:Int32, wrapS:Int32, wrapT
     glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_T), wrapT)
 
     glBindTexture(GLenum(GL_TEXTURE_2D), 0)
-    
+
     return texture
 }
 
@@ -202,7 +202,7 @@ func generateFramebufferForTexture(_ texture:GLuint, width:GLint, height:GLint, 
     glGenFramebuffers(1, &framebuffer)
     glBindFramebuffer(GLenum(GL_FRAMEBUFFER), framebuffer)
     glBindTexture(GLenum(GL_TEXTURE_2D), texture)
-    
+
     glTexImage2D(GLenum(GL_TEXTURE_2D), 0, internalFormat, width, height, 0, GLenum(format), GLenum(type), nil)
     glFramebufferTexture2D(GLenum(GL_FRAMEBUFFER), GLenum(GL_COLOR_ATTACHMENT0), GLenum(GL_TEXTURE_2D), texture, 0)
 
@@ -210,14 +210,14 @@ func generateFramebufferForTexture(_ texture:GLuint, width:GLint, height:GLint, 
     if (status != GLenum(GL_FRAMEBUFFER_COMPLETE)) {
         throw FramebufferCreationError(errorCode:status)
     }
-    
+
     let stencilBuffer:GLuint?
     if stencil {
         stencilBuffer = try attachStencilBuffer(width:width, height:height)
     } else {
         stencilBuffer = nil
     }
-    
+
     glBindTexture(GLenum(GL_TEXTURE_2D), 0)
     glBindFramebuffer(GLenum(GL_FRAMEBUFFER), 0)
     return (framebuffer, stencilBuffer)
@@ -234,12 +234,12 @@ func attachStencilBuffer(width:GLint, height:GLint) throws -> GLuint {
     glFramebufferRenderbuffer(GLenum(GL_FRAMEBUFFER), GLenum(GL_STENCIL_ATTACHMENT), GLenum(GL_RENDERBUFFER), stencilBuffer)
 
     glBindRenderbuffer(GLenum(GL_RENDERBUFFER), 0)
-    
+
     let status = glCheckFramebufferStatus(GLenum(GL_FRAMEBUFFER))
     if (status != GLenum(GL_FRAMEBUFFER_COMPLETE)) {
         throw FramebufferCreationError(errorCode:status)
     }
-    
+
     return stencilBuffer
 }
 
@@ -275,9 +275,11 @@ extension String {
             return "\(self)\(suffix + 1)"
         }
     }
-    
+
     func withGLChar(_ operation:(UnsafePointer<GLchar>) -> ()) {
-        if let value = self.cString(using:String.Encoding.utf8) {
+// BUGBUG: This orignal code crashes in release
+//        if let value = self.cString(using:String.Encoding.utf8) {
+		if let value = (self as NSString).utf8String {
             operation(UnsafePointer<GLchar>(value))
         } else {
             fatalError("Could not convert this string to UTF8: \(self)")
